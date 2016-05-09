@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import Tools.USBCAN.USBCANCH340 as can
+import usb_can_ch340 as can
 import threading
 import time
 import sys
@@ -13,7 +13,7 @@ class candriver(threading.Thread):
     
     def __init__(self):
         threading.Thread.__init__(self)
-        self.USBCAN = can.USBCAN ( 500000 , "Standard" , "normal" , timeout=0.005)
+        self.USBCAN = can.USBCAN (500000, "standard", "normal", timeout=0.005)
         self.USBCAN.flush()
         
     def run(self):
