@@ -226,22 +226,17 @@ proc can_send {data} {
      if {$cannet} {
          exec cansend $dev $data
      } else {
-         send $data
-	send "\n"
+         send -- "$data\n"
      }
 }
-
-
-
 
 set cannet 0
 
 if {$cannet} {
 	spawn candump -ta -cdx $dev
 } else {
-	spawn ./canshellv1.py
-	expect {*ready, Baud:*}
-	
+	spawn ./canshell.py
+	expect {USB-CAN Device ready}
 }
 
 can_send {000#8100}
