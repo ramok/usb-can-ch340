@@ -20,28 +20,38 @@ class candriver(threading.Thread):
         self.starttime=time.time()
         while 1:
             
-            if select.select([sys.stdin],[],[],0)[0]:
-                line = sys.stdin.readline()
-                line = line.strip("\n")
-                
-                if "send " in line and "#" in line:
-                    self.cansend(line.split("send ")[-1])
-                
-                else:
-                    if "#" in line:
-                        self.cansend(line)
-                    
-            if self.USBCAN.rec(1)=="timeout":
-                print("timeout")
-            else:
-                
-                while len(self.USBCAN.Message) > 0:
-                    acttime = time.time()
-                    message = self.USBCAN.Message.pop(0)
-                    print( " (" + "{:.6f}".format(acttime) +
-                    ") can0  RX - -  " + message["ID"][-3:] +
-                    "   ["+ str(message["length"]) + "]  " +
-                    ' '.join('{:02x}'.format(x) for x in message["data"]) )
+            inputready = select.select([sys.stdin, self.USBCAN.canport], [], [])[0]
+
+            for s in inputready:
+                if s == sys.stdin:
+                    line = sys.stdin.readline()
+                    line = line.strip("\n")
+
+                    try:
+                        if "send " in line and "#" in line:
+                            self.cansend(line.split("send ")[-1])
+                        elif "#" in line:
+                            self.cansend(line)
+                        elif line == "s":
+                            self.USBCAN.bus_status()
+                            print ("Bus Status: {}".format(self.USBCAN.Buserrors))
+                        elif not line:
+                            pass
+                            return
+                        else:
+                            print ("wrong input line")
+                    except:
+                        print ("Error: ", sys.exc_info()[0])
+
+                if s == self.USBCAN.canport:
+                    self.USBCAN.rec()
+                    while len(self.USBCAN.Message) > 0:
+                        acttime = time.time()
+                        message = self.USBCAN.Message.pop(0)
+                        print( " (" + "{:.6f}".format(acttime) +
+                            ") can0  RX - -  " + message["ID"][-3:] +
+                            "   ["+ str(message["length"]) + "]  " +
+                            ' '.join('{:02x}'.format(x) for x in message["data"]) )
             
             
     def cansend(self, adddata):
