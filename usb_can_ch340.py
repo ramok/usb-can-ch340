@@ -5,6 +5,7 @@ import serial
 from serial.tools import list_ports
 import time
 import binascii
+import re
 
 class USBCAN:
     # Message type:
@@ -146,6 +147,7 @@ class USBCAN:
 
 
         mmtype = self.mtype[mmtype]  # message type
+        data = re.sub("\.", "", data)
 
         if len(data) > 16:
             raise ValueError("Max 8 databytes")
