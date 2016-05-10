@@ -62,11 +62,13 @@ class candriver(threading.Thread):
         while len(addr) < 8:
             addr = "0" + addr
         
+        data = re.sub('\.', '', data)
+        
         self.USBCAN.send(addr, data)
         acttime = time.time()
                    
-        data = re.sub('\.', '', data)
         data = re.findall('.{2}', data)
+        
         print( " (" + "{:.6f}".format(acttime) +
         ") can0  TX - -  " + addr[-3:] +
         "   ["+ str(len(data)) + "]  " +

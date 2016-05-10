@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # v0.6 (c) 2015 urban
 
-import serial
+import serial as serial
 from serial.tools import list_ports
 import time
 import binascii
@@ -122,9 +122,18 @@ class USBCAN:
 
         self.canport.write(bytearray.fromhex(message))
         self.rec()
-
-        while self.readbuf[2] != 4:
+        
+        timeout=0
+        while self.readbuf[0] != 4:
+            
+            if timeout > 100:
+                self.Buserrors["errorflags"] = bytearray(b'\xFF\xFF\xFF\xFF')
+                self.Buserrors["rec-errors"] = 1
+                self.Buserrors["tr-errors"] = 1
+                break
+            
             self.rec()
+            timeout+=1
 
     def send(self, mfID, data = "", mmtype = "trans-rec", mftype = "standard", mfformat = "ata", Baud = None):
 
@@ -141,14 +150,20 @@ class USBCAN:
             mlength  = "00"
             mfformat = self.frtype[mfformat]                 # setup frameformat
         else:
-            mlength  = "{:02X}".format(int(len(data) / 2))   #Nachrichtenlänge setzen
-            mfformat = self.frfmt[mfformat]                  # setup frameformat
+            
+            mlength = int(len(data) / 2)
+            
+            if mlength > 8:
+                raise ValueError("To many Databytes (max 8)!")
+            
+            mlength  = "{:02X}".format( mlength )              #Nachrichtenlänge setzen
+            mfformat = self.frfmt[mfformat]                     # setup frameformat
             data    += "0" * (16 - len(data))
-
-
+           
+            
+        
         mmtype = self.mtype[mmtype]  # message type
-        data = re.sub("\.", "", data)
-
+        
         if len(data) > 16:
             raise ValueError("Max 8 databytes")
         if len(mfID) != 8:
@@ -161,7 +176,7 @@ class USBCAN:
             ID += mfID[7 - i * 2]
 
         mfID = ID
-
+        
         # build message
         message = mmtype + mftype + mfformat + mfID + mlength + data + "00"
 
@@ -195,7 +210,6 @@ class USBCAN:
                 return "timeout"
 
         if self.canport.readinto(self.readbuf) == len(self.readbuf): # wait for message
-
             mcks = sum(self.readbuf[:-2])                # calculate checksum
             mcks = "{:02X}".format(mcks)[-2:]
 
@@ -288,7 +302,7 @@ if __name__ == "__main__":
 
     try:
         #USBCAN.set_IDfilter(["00000584","00000604"])
-        USBCAN.send("11111111", "123456")
+        USBCAN.send("000007E5", "5E00000000000000")
         #time.sleep(2)
         USBCAN.rec()
         print(USBCAN.Message)
