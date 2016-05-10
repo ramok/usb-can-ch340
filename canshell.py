@@ -6,6 +6,7 @@ import threading
 import time
 import sys
 import select
+import re
 
 class candriver(threading.Thread):
     
@@ -58,16 +59,18 @@ class candriver(threading.Thread):
         addr = adddata.split( "#" ) [0]
         data = adddata.split( "#" ) [1]
         
-        while len( addr ) < 8:
+        while len(addr) < 8:
             addr = "0" + addr
         
-        self.USBCAN.send( addr , data )
+        self.USBCAN.send(addr, data)
         acttime = time.time()
                    
+        data = re.sub('\.', '', data)
+        data = re.findall('.{2}', data)
         print( " (" + "{:.6f}".format(acttime) +
         ") can0  TX - -  " + addr[-3:] +
-        "   ["+ str(1) + "]  " +
-        str(data) )
+        "   ["+ str(len(data)) + "]  " +
+        " ".join(data))
         
     def close(self):
         self.USBCAN.close()
