@@ -213,6 +213,7 @@ class USBCAN:
 
                 message["ID"]     = ID
                 message["length"] = self.readbuf[7]      # read data length
+                message["data"]   = message["data"][:message["length"]] # trim data to data length
 
                 for key in self.frtype:
                     if self.readbuf[1] == int(self.frtype[key]):
