@@ -239,6 +239,7 @@ if {$cannet} {
 	expect {USB-CAN Device ready}
 }
 
+# reboot all devices what support :MT
 can_send {000#8100}
 
 expect -re {\((\d+)\.(\d+)\).* ([[:xdigit:]]{3}.*) (\[\d\])  *([^\n]+)\n} {
