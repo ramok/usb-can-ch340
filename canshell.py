@@ -26,6 +26,9 @@ class candriver(threading.Thread):
             for s in inputready:
                 if s == sys.stdin:
                     line = sys.stdin.readline()
+                    if line == "\n":
+                        continue
+
                     line = line.strip("\n")
 
                     try:
@@ -37,7 +40,6 @@ class candriver(threading.Thread):
                             self.USBCAN.bus_status()
                             print ("Bus Status: {}".format(self.USBCAN.Buserrors))
                         elif not line:
-                            pass
                             return
                         else:
                             print ("wrong input line")
